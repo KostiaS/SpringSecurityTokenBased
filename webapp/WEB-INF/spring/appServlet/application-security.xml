@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+ 	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=
+		"http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-4.0.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+		
+		<http pattern="/api/authenticate" security="none" />
+		<http pattern="/api/login" security="none"/>
+    	<http pattern="/api/signup" security="none"/>
+
+	    <http pattern="/api/*" entry-point-ref="JwtAuthenticationEntryPoint" create-session="stateless">
+	        <csrf disabled="true"/>
+	        <custom-filter before="FORM_LOGIN_FILTER" ref="jwtAuthenticationTokenFilter"/>
+	    </http>
+    
+	    <beans:bean id="jwtAuthenticationTokenFilter" class="immigration.security.JwtAuthenticationTokenFilter">
+	        <beans:property name="authenticationManager" ref="authenticationManager" />
+<!-- 	        <beans:property name="authenticationSuccessHandler" ref="jwtAuthenticationSuccessHandler" /> -->
+	    </beans:bean>
+	    <beans:bean id="JwtAuthenticationEntryPoint" class="immigration.security.JwtAuthenticationEntryPoint" />
+		
+		<beans:bean id="bcrypt" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+			<beans:constructor-arg name="strength" value="11" />
+		</beans:bean>
+		
+		<beans:bean id="jwtTokenUtil" class="immigration.security.JwtTokenUtil" />
+		
+<!-- 		<beans:bean id="userRepository" class="immigration.security.repository.UserRepository" /> -->
+		
+		<beans:bean id="jwtUserDetailsServiceImpl" class="immigration.security.services.JwtUserDetailsServiceImpl" />
+		
+	    <authentication-manager alias="authenticationManager">
+	        <authentication-provider user-service-ref="jwtUserDetailsServiceImpl">
+	        	<password-encoder ref="bcrypt" />
+	        </authentication-provider>
+	    </authentication-manager>
+		
+</beans:beans>
